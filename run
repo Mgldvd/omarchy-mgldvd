@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Interactive omarchy-mgldvd menu: installs, uninstalls and tunes the personal
+# mouse/keyboard improvements for Omarchy.
+set -euo pipefail
+
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+IMPROVEMENTS_DIR="$DIR/improvements"
+
+if ! command -v gum >/dev/null 2>&1; then
+  echo "This menu needs 'gum' (it ships with Omarchy)." >&2
+  exit 1
+fi
+
+gum style --border rounded --padding "0 2" --border-foreground 212 \
+  "omarchy-mgldvd" "mouse and keyboard improvements for Omarchy"
+
+while true; do
+  mapfile -t improvement_dirs < <(find "$IMPROVEMENTS_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+
+  declare -A label_to_dir=()
+  options=()
+  for dir in "${improvement_dirs[@]}"; do
+    script="$dir/improvement.sh"
+    [ -x "$script" ] || continue
+    name="$("$script" name)"
+    status="$("$script" status)"
+    mark="○"
+    [ "$status" = "installed" ] && mark="●"
+    label="$mark $name"
+    label_to_dir["$label"]="$dir"
+    options+=("$label")
+  done
+
+  if [ "${#options[@]}" -eq 0 ]; then
+    echo "No improvements found in $IMPROVEMENTS_DIR" >&2
+    exit 1
+  fi
+
+  options+=("Quit")
+
+  chosen=$(printf '%s\n' "${options[@]}" | gum choose --header "Improvements (● installed / ○ not installed)") || true
+  if [ -z "$chosen" ] || [ "$chosen" = "Quit" ]; then
+    break
+  fi
+
+  dir="${label_to_dir[$chosen]}"
+  script="$dir/improvement.sh"
+  status="$("$script" status)"
+
+  gum style --foreground 245 "$("$script" description)"
+
+  if [ "$status" = "installed" ]; then
+    action=$(gum choose --header "Status: installed" "Uninstall" "Configure" "Back") || true
+  else
+    action=$(gum choose --header "Status: not installed" "Install" "Configure (without installing)" "Back") || true
+  fi
+
+  case "$action" in
+  "Install") "$script" install ;;
+  "Uninstall") "$script" uninstall ;;
+  "Configure"*) "$script" configure ;;
+  *) : ;;
+  esac
+  echo
+done
+
+echo "Done."

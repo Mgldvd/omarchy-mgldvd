@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Graphical window (QML/Quickshell) to install/uninstall and tune the
+# improvements. Alternative to ./run (terminal menu). It does not touch the
+# main omarchy-shell: it runs as a separate quickshell instance.
+#
+# It is fully detached from the terminal (own session, no tty, output
+# discarded): the prompt comes back immediately, and closing the terminal or
+# pressing Ctrl+C doesn't kill the window. Close it with its Close button,
+# Escape or Ctrl+Q.
+set -euo pipefail
+
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+if ! command -v qs >/dev/null 2>&1; then
+  echo "This mode needs 'qs' (quickshell), which should already be installed on Omarchy." >&2
+  exit 1
+fi
+
+setsid -f qs -n -p "$DIR/gui/Main.qml" >/dev/null 2>&1 </dev/null
+
+# On Hyprland, maximize the window once it appears (like SUPER + ALT + F).
+if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  setsid -f "$DIR/gui/maximize.sh" >/dev/null 2>&1 </dev/null
+fi
