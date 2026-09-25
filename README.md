@@ -2,6 +2,8 @@
   <img src=".imges/5d5f88b4f9fb5cc1656a.webp" alt="" width="850">
 </div>
 
+> Warning: This repo is experimental and intended for personal use.
+
 # omarchy-mgldvd
 
 Personal improvements for my [Omarchy](https://omarchy.org/) install, mostly
