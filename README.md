@@ -1,3 +1,7 @@
+<div align="center">
+  <img src=".imges/5d5f88b4f9fb5cc1656a.webp" alt="" width="850">
+</div>
+
 # omarchy-mgldvd
 
 Personal improvements for my [Omarchy](https://omarchy.org/) install, mostly
